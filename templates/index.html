@@ -128,6 +128,22 @@
             transform: scale(1);
         }
 
+        .email-button {
+            width: auto;
+            background-color: #9bddff;
+            color: #fff;
+            padding: 5px 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .email-button:hover {
+            background-color: #7db2e8;
+        }
+
         @media only screen and (max-width: 600px) {
             .flex-container select {
                 transform: scale(0.8);
@@ -179,7 +195,8 @@
                     <li>
                         <strong>Name:</strong> <span class="highlight-name" style="font-size: x-large;">{{ result['Name'] }}</span><br><br>
                         <strong>Title:</strong> {{ result['Title'] }}<br><br>
-                        <strong>Research Summary:</strong> {{ result['Research Summary'] }}
+                        <strong>Research Summary:</strong> {{ result['Research Summary'] }}<br><br>
+                        <a href="mailto:{{ result['Email'] }}" class="email-button">Email this Professor</a>
                     </li>
                 {% endfor %}
             </ul>
