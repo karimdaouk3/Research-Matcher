@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -153,56 +154,64 @@
                 transform: scale(1);
             }
         }
-
     </style>
 </head>
+
 <body>
     <h1>SEAS Research Proposal Matcher</h1>
     <form method="POST" onsubmit="return keepText()">
         <b><label>Enter Research Proposal Idea:</label></b>
         <div class="flex-container">
             <settings for="generateTitle">
-                Generate Suggested Title: <input type="checkbox" name="generateTitle" {% if generateTitleCheckbox %}checked{% endif %}>
+                Generate Suggested Title: <input type="checkbox" name="generateTitle" {% if generateTitleCheckbox
+                    %}checked{% endif %}>
             </settings>
             <settings for="resultCount">
                 Number of Suggested Faculty:
                 <select name="resultCount" id="resultCount">
                     {% for i in range(1, 11) %}
-                    <option value="{{ i }}" {% if resultCount == i or (not resultCount and i == 5) %}selected{% endif %}>{{ i }}</option>
+                    <option value="{{ i }}" {% if resultCount==i or (not resultCount and i==5) %}selected{% endif %}>{{
+                        i }}</option>
                     {% endfor %}
                 </select>
             </settings>
         </div>
-        <textarea name="proposal" id="proposal" placeholder="example: 'The goal of this project is to develop an AI-driven system that can predict when industrial machinery needs maintenance. This involves mechanical engineering for understanding the machinery's operational dynamics, computer science for developing predictive algorithms and data processing techniques, and industrial engineering to optimize maintenance schedules and processes. The system would help in reducing downtime and maintenance costs in various industries.'">{{ proposal }}</textarea>
+        <textarea name="proposal" id="proposal"
+            placeholder="example: 'The goal of this project is to develop an AI-driven system that can predict when industrial machinery needs maintenance. This involves mechanical engineering for understanding the machinery's operational dynamics, computer science for developing predictive algorithms and data processing techniques, and industrial engineering to optimize maintenance schedules and processes. The system would help in reducing downtime and maintenance costs in various industries.'">{{ proposal }}</textarea>
         <br>
         <input type="submit" value="Submit">
     </form>
 
     {% if generatedTitle %}
-        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
-            <div style="text-align: center;">
-                <p style="font-weight: bold; font-style: italic; font-size: 24px; margin-bottom: 10;">{{ generatedTitle }}</p>
-            </div>
+    <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
+        <div style="text-align: center;">
+            <p style="font-weight: bold; font-style: italic; font-size: 24px; margin-bottom: 10;">{{ generatedTitle }}
+            </p>
         </div>
+    </div>
     {% endif %}
 
     {% if proposal %}
-        <h2 style="margin-top: 10px;">Recommended Faculty:</h2>
-        {% if results %}
-            {% set loopLimit = resultCount | int %}
-            <ul>
-                {% for result in results[:loopLimit] %}
-                    <li>
-                        <strong>Name:</strong> <span class="highlight-name" style="font-size: x-large;">{{ result['Name'] }}</span><br><br>
-                        <strong>Title:</strong> {{ result['Title'] }}<br><br>
-                        <strong>Research Summary:</strong> {{ result['Research Summary'] }}<br><br>
-                        <a href="mailto:{{ result['Email'] }}" class="email-button">Email this Professor</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No results found.</p>
-        {% endif %}
+    <h2 style="margin-top: 10px;">Recommended Faculty:</h2>
+    {% if results %}
+    {% set loopLimit = resultCount | int %}
+    <ul>
+        {% for result in results[:loopLimit] %}
+        <li>
+            <strong>Name:</strong> <span class="highlight-name" style="font-size: x-large;">{{ result['Name']
+                }}</span><br><br>
+            <strong>Title:</strong> {{ result['Title'] }}<br><br>
+            <strong>Research Summary:</strong> {{ result['Research Summary'] }}<br><br>
+            <a href="mailto:{{ result['Email'] }}?subject=Research Proposal&body=Dear {{ result['Name'] }},%0D%0A%0D%0A{{ proposal }}%0D%0A%0D%0AResearch Summary:%0D%0A{{ result['Research Summary'] }}"
+                class="email-button">
+                Email this Professor
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No results found.</p>
+    {% endif %}
     {% endif %}
 
     <script>
@@ -228,4 +237,5 @@
         });
     </script>
 </body>
+
 </html>
