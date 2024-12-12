@@ -154,6 +154,29 @@
                 transform: scale(1);
             }
         }
+        .keywords-list {
+            list-style: none;
+            padding: 0;
+            margin: 0; /* No extra margin around the list */
+        }
+
+        .keywords-list li {
+            display: inline-block;
+            background-color: #e0f0ff; /* Light blue bubble color */
+            color: #003865; /* Text color for contrast */
+            padding: 2px 6px; /* Compact padding for a cleaner look */
+            margin: 0 4px 4px 0; /* Small gap between bubbles */
+            border-radius: 8px; /* Subtle rounded corners */
+            font-size: 0.8em; /* Smaller, lightweight text */
+            font-weight: normal; /* Normal font weight */
+            line-height: 1.4; /* Improve vertical alignment of text */
+            transition: background-color 0.2s; /* Subtle color change on hover */
+        }
+
+        .keywords-list li:hover {
+            background-color: #d6ebff; /* Slightly darker blue on hover */
+        }
+
     </style>
 </head>
 
@@ -202,6 +225,14 @@
                 }}</span><br><br>
             <strong>Title:</strong> {{ result['Title'] }}<br><br>
             <strong>Research Summary:</strong> {{ result['Research Summary'] }}<br><br>
+            {% if result.get('keywords') %}
+                <strong>Keywords:</strong> 
+                <ul class="keywords-list">
+                    {% for keyword in result['keywords'] %}
+                        <li>{{ keyword }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
             <a href="mailto:{{ result['Email'] }}?subject=Research Proposal&body=Dear {{ result['Name'] }},%0D%0A%0D%0A{{ proposal }}%0D%0A%0D%0AResearch Summary:%0D%0A{{ result['Research Summary'] }}"
                 class="email-button">
                 Email this Professor
