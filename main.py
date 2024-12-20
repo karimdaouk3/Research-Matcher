@@ -20,7 +20,7 @@ with open('C:/Users/misss/OneDrive/Desktop/Research-Matcher/faculty_data.json', 
     loaded_data_list = json.load(json_file)
     
 #NEW
-with open('C:/Users/misss/OneDrive/Desktop/Research-Matcher/faculty_info_keywords.json', 'r') as json_file:
+with open('C:/Users/misss/OneDrive/Desktop/Research-Matcher/faculty_info_uniquekeywords.json', 'r') as json_file:
     faculty_keywords = json.load(json_file)
     
 df = pd.DataFrame(loaded_data_list)
