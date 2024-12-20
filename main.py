@@ -16,11 +16,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = Flask(__name__)
 
 # Load the JSON file back into a DataFrame
-with open('C:/Users/misss/OneDrive/Desktop/Research-Matcher/faculty_data.json', 'r') as json_file:
+with open('faculty_data.json', 'r') as json_file:
     loaded_data_list = json.load(json_file)
     
 #NEW
-with open('C:/Users/misss/OneDrive/Desktop/Research-Matcher/faculty_info_uniquekeywords.json', 'r') as json_file:
+with open('faculty_info_uniquekeywords.json', 'r') as json_file:
     faculty_keywords = json.load(json_file)
     
 df = pd.DataFrame(loaded_data_list)
@@ -72,6 +72,7 @@ def index():
         # Extract relevant information for rendering
         top_n_rows.loc[:, 'Name'] = top_n_rows['Name'].apply(lambda x: x.title() if x else x)
         top_n_rows.loc[:, 'Title'] = top_n_rows['Title'].apply(lambda x: x.title() if x else x)
+        top_n_rows['One-Line Summary'] = top_n_rows['Research Summary'].apply(lambda x: generate_one_line_summary(x, proposal) if x else x)
 
         
         df['Name_lower'] = df['Name'].str.lower()
@@ -85,7 +86,8 @@ def index():
             result = {
                 'Name': row['Name'],
                 'Title': row['Title'],
-                'Research Summary': row['Research Summary']
+                'Research Summary': row['Research Summary'],
+                'One-Line Summary': row['One-Line Summary']
             }
             if 'keywords' in row and isinstance(row['keywords'], list) and len(row['keywords']) > 0:
                 result['keywords'] = row['keywords']  # Keep it as a list
@@ -124,6 +126,19 @@ def generate_title(proposal):
         max_tokens=50,
     )
 
+    return response.choices[0].message.content.strip()
+
+def generate_one_line_summary(research_summary, proposal):
+    # Call the OpenAI API to summarize the research summary into one relevant line
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are an assistant that summarizes long research summaries into a single line. The summary should be relevant to the given proposal."},
+            {"role": "user", "content": f"Proposal: {proposal}\nResearch Summary: {research_summary}"}
+        ],
+        temperature=0.7,
+        max_tokens=50,
+    )
     return response.choices[0].message.content.strip()
 
 if __name__ == '__main__':

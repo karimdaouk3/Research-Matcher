@@ -235,6 +235,7 @@
                     {% endfor %}
                 </ul>
             {% endif %}
+            <strong>Relevance:</strong> {{ result['One-Line Summary']}}<br><br> <!-- Adding one line summary -->
             <strong>Research Summary:</strong> {{ result['Research Summary'] }}<br><br>
             <a href="mailto:{{ result['Email'] }}?subject=Research Proposal&body=Dear {{ result['Name'] }},%0D%0A%0D%0A{{ proposal }}%0D%0A%0D%0AResearch Summary:%0D%0A{{ result['Research Summary'] }}"
                 class="email-button">
