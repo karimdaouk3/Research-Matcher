@@ -9,21 +9,31 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 from waitress import serve
+from pinecone import Pinecone
+import subprocess
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Connect to Pinecone client
+pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY'))
+index_name = os.getenv('PINECONE_INDEX_NAME')
+if not pc.has_index(index_name):
+    subprocess.run(["python", "pinecone_setup.py"])
+
 app = Flask(__name__)
 
+'''
 # Load the JSON file back into a DataFrame
 with open('faculty_data.json', 'r') as json_file:
     loaded_data_list = json.load(json_file)
+'''
     
 #NEW
 with open('faculty_info_uniquekeywords.json', 'r') as json_file:
     faculty_keywords = json.load(json_file)
     
-df = pd.DataFrame(loaded_data_list)
+#df = pd.DataFrame(loaded_data_list)
 
 #NEW
 #keywords_df = pd.DataFrame(faculty_keywords)
@@ -55,6 +65,36 @@ def index():
         # Assuming 'proposal_embedding' contains the 1D array of the embedded proposal vector
         proposal_embedding = model.encode([proposal])[0]
 
+        keywords_df['Name_lower'] = keywords_df['name'].str.lower()
+
+        # NEW: Query Pinecone
+        query_results = query_pinecone(proposal_embedding, top_k=result_count)
+        results = []
+        for match in query_results["matches"]:
+            metadata = match["metadata"]
+            name_lower = metadata["name"].lower()
+
+            keywords = keywords_df.loc[keywords_df['Name_lower'] == name_lower, 'keywords'].values
+            keywords = keywords[0] if len(keywords) > 0 else None
+
+            if not keywords:
+                keywords = []
+            elif isinstance(keywords, str):
+                keywords = [keyword.strip() for keyword in keywords.split(',')]
+            elif not isinstance(keywords, list):
+                keywords = []  # Default to empty list if it's not already a list
+
+
+            results.append({
+                "Name": metadata["name"].title(),
+                "Title": metadata["title"].title(),
+                "Research Summary": metadata["researchSummary"],
+                "One-Line Summary": generate_one_line_summary(metadata["researchSummary"], proposal),
+                "keywords": keywords
+            })
+        
+        # Dot Product Method
+        '''
         # Calculate dot product for each row
         df['Dot Product'] = df['Research Embedding'].apply(lambda x: np.dot(proposal_embedding, x) if x is not None else None)
 
@@ -74,7 +114,7 @@ def index():
         top_n_rows.loc[:, 'Title'] = top_n_rows['Title'].apply(lambda x: x.title() if x else x)
         top_n_rows['One-Line Summary'] = top_n_rows['Research Summary'].apply(lambda x: generate_one_line_summary(x, proposal) if x else x)
 
-        
+
         df['Name_lower'] = df['Name'].str.lower()
         keywords_df['Name_lower'] = keywords_df['name'].str.lower()
         df = pd.merge(df, keywords_df[['Name_lower', 'keywords']], on='Name_lower', how='left')
@@ -87,14 +127,15 @@ def index():
                 'Name': row['Name'],
                 'Title': row['Title'],
                 'Research Summary': row['Research Summary'],
-                'One-Line Summary': row['One-Line Summary']
+                'One-Line Summary': row['One-Line Summary'] 
             }
             if 'keywords' in row and isinstance(row['keywords'], list) and len(row['keywords']) > 0:
                 result['keywords'] = row['keywords']  # Keep it as a list
             else:
                 result['keywords'] = None
             results.append(result)
-        
+        '''
+            
         """
         results = top_n_rows[['Name', 'Title', 'Research Summary', 'keywords']].to_dict(orient='records')
         for result in results:
@@ -140,6 +181,20 @@ def generate_one_line_summary(research_summary, proposal):
         max_tokens=50,
     )
     return response.choices[0].message.content.strip()
+
+def query_pinecone(proposal_embedding, top_k):
+    index = pc.Index(os.getenv('PINECONE_INDEX_NAME'))
+    try:
+        results = index.query(
+            vector=proposal_embedding.tolist(),
+            top_k=top_k,
+            include_values=False,
+            include_metadata=True
+        )
+        return results
+    except Exception as e:
+        print(f"Error querying Pinecone: {e}")
+        return {"matches": []} 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
